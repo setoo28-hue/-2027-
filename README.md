@@ -23,6 +23,19 @@
   (저장소 Settings → Pages → Branch를 `main / (root)`로 한 번 바꾸면 `main`만 푸시해도 됩니다.)
 - PWA·JS를 고친 뒤에는 휴대폰에서 한 번 새로고침하면 반영됩니다(SW는 network-first라 온라인이면 항상 최신).
 
-## 다음 단계 (DB)
-트레이너 폰에서 입력한 기록이 회원 폰에 실시간으로 뜨려면 무료 DB(Supabase, `setoo28@naver.com`) 연결이 필요합니다.
-프로젝트 생성 후 URL·anon key를 넣고, `state`를 localStorage 대신 테이블(`members`, `sessions` 등)에 저장하도록 바꾸면 됩니다.
+## DB (Supabase, 실사용 연결됨)
+- 프로젝트: `klygym-member` (조직 `setoo28@naver.com's Org`, 리전 Northeast Asia (Seoul))
+- 프로젝트 URL: `https://dvjqfwdfpyytphclavkv.supabase.co`
+- 사용 키: publishable key (`sb_publishable_...`, `index.html`의 `var SB` 안에 있음 — 공개돼도 되는 키)
+- 테이블: `public.klygym_members` (회원 1명 = 1행, `member_code` 기본키, 운동·숙제는 jsonb)
+- RLS: 켜짐 + 정책 없음 → anon은 테이블 직접 접근 불가. 아래 RPC(security definer)로만 한 행씩 읽고 씁니다.
+  - `klygym_member_get(p_code)` — 회원 코드로 조회
+  - `klygym_member_save(p_code, p_state jsonb)` — 트레이너 저장(업서트)
+  - `klygym_homework_toggle(p_code, p_index, p_done)` — 회원 숙제 체크
+- 스키마 원본: 이 폴더 밖 `work/klygym/supabase-schema.sql`
+
+## 쓰는 법
+- **트레이너(권성현 코치) 폰**: 앱을 열어 `수업 기록` → 회원 이름·운동·피드백 입력 → `회원 화면에 반영` → `회원 링크` 카드의 **링크 복사**로 회원에게 카톡.
+- **회원 폰**: 받은 링크(`.../?m=회원코드`)를 열면 수업 내용이 보이고, 숙제 체크가 트레이너 화면에 되돌아옵니다. 홈 화면에 추가하면 앱처럼 열립니다.
+- 반영은 10초 주기 + 화면 복귀 시 자동 갱신입니다(즉시는 아님). 다른 회원 기록은 `회원 코드로 불러오기`로 엽니다.
+- DB 비밀번호는 이 저장소에 없습니다(비공개 파일 보관).
