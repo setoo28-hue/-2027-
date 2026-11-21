@@ -549,7 +549,11 @@
       <div class="link-row">
         <code id="t-code">—</code>
         <button type="button" class="mini-btn" id="t-copy">링크 복사</button>
-        <button type="button" class="mini-btn" id="t-newcode">새 코드</button>
+        <button type="button" class="mini-btn" id="t-newcode">새 회원</button>
+      </div>
+      <div class="link-row" style="margin-top:6px">
+        <input class="input" id="t-open-code" placeholder="회원 코드로 불러오기" style="flex:1 1 auto;min-width:0;padding:9px 10px;font-size:12.5px">
+        <button type="button" class="mini-btn" id="t-open" style="flex:0 0 84px">불러오기</button>
       </div>
       <p class="hint">이 링크를 회원에게 보내면 회원 폰에서 오늘 수업·숙제가 보이고, 숙제 체크가 여기로 돌아옵니다. 10초마다 자동으로 맞춰집니다.</p>
     </section>
@@ -824,10 +828,10 @@
     var a = document.activeElement;
     return !!(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
   }
-  function applyRemote(r){
+  function applyRemote(r, force){
     if(!r) return;
     var m = state.member;
-    if(memberMode){
+    if(memberMode || force){
       m.name = r.name || m.name; m.program = r.program || m.program;
       m.total = num(r.total, m.total); m.completed = num(r.completed, m.completed);
       m.date = r.session_date || m.date; m.next = r.next_at || m.next;
@@ -1262,9 +1266,25 @@
     } else { window.prompt("회원 링크", link); }
   });
   document.getElementById("t-newcode").addEventListener("click", function(){
-    if(!window.confirm("새 회원 코드를 만들까요? 기존 링크는 이 회원과 연결되지 않습니다.")) return;
-    state.member.code = newCode(); save(); renderTrainer();
-    pushState().then(function(){ toast("새 코드로 저장했어요"); });
+    if(!window.confirm("새 회원으로 시작할까요? 지금 화면의 기록은 이 회원 코드에 그대로 남습니다.")) return;
+    var code = newCode();
+    state = { member: { name:"", program:"1:1 PT", total:20, completed:0, date:"", next:"", code:code },
+              exercises: [], feedback: "", point: "", homework: [] };
+    save(); renderTrainer(); renderMember();
+    pushState().then(function(){ toast("새 회원 코드 " + code + " · 링크를 복사해 보내세요"); });
+  });
+
+  document.getElementById("t-open").addEventListener("click", function(){
+    var c = (document.getElementById("t-open-code").value || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if(c.length < 4){ toast("회원 코드를 확인해 주세요"); return; }
+    if(!sb){ toast("DB 연결을 확인해 주세요"); return; }
+    sb.rpc("klygym_member_get", { p_code: c }).then(function(res){
+      if(res.error || !res.data){ toast("그 코드의 회원 기록이 없어요"); return; }
+      state.member.code = c;
+      applyRemote(res.data, true); save(); renderTrainer(); renderMember();
+      document.getElementById("t-open-code").value = "";
+      toast((res.data.name || "회원") + " 기록을 불러왔어요");
+    }).catch(function(){ toast("불러오지 못했어요"); });
   });
 
   /* init */
