@@ -6,7 +6,13 @@
 <meta name="theme-color" content="#08090B">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="클라이짐">
+<meta name="description" content="클라이짐 1:1 PT 회원관리 — 오늘 수업 기록과 자세 쇼츠를 한 화면에서">
 <title>클라이짐 · 스마트 회원관리</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
@@ -309,6 +315,19 @@
   .input::placeholder,.textarea::placeholder{color:#5C636E}
   .input:focus,.textarea:focus{border-color:var(--accent-line);background:#1E222A}
   .textarea{resize:vertical;min-height:96px;line-height:1.65}
+  .sel{
+    width:100%;background:var(--surface-2);border:1px solid var(--line);
+    border-radius:11px;padding:11px 34px 11px 12px;font-size:12.5px;color:var(--text);
+    outline:none;appearance:none;-webkit-appearance:none;letter-spacing:-.01em;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23C9FF4D' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");
+    background-repeat:no-repeat;background-position:right 12px center;background-size:12px;
+    text-overflow:ellipsis;
+  }
+  .sel:focus{border-color:var(--accent-line);background-color:#1E222A}
+  .sel option,.sel optgroup{background:#1A1D23;color:var(--text)}
+  .sel-note{margin:6px 2px 0;font-size:10.5px;line-height:1.5;color:var(--muted-2);letter-spacing:-.01em}
+  .sel-note.on{color:var(--accent)}
+  .sel-note.idle{color:#7A828E}
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
   .stepper{display:flex;align-items:center;gap:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:4px}
@@ -559,7 +578,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         운동 추가
       </button>
-      <p class="hint">쇼츠 링크를 비우면 <b>@setoo28</b> 채널에서 종목명으로 검색한 화면이 열립니다. 링크는 영상 ID만 넣어도 됩니다.</p>
+      <p class="hint">쇼츠를 <b>제목으로 골라</b> 연결하거나, 영상 ID만 직접 넣어도 됩니다. 비우면 <b>@setoo28</b> 채널에서 종목명으로 검색한 화면이 열립니다.</p>
     </section>
 
     <section class="card">
@@ -616,6 +635,61 @@
   "use strict";
 
   var YT = "https://www.youtube.com/shorts/";
+
+  var SHORTS = [
+    { id: "hbHXXO43oEk", label: "스쿼트 무릎 아플 때, 이 3가지만 확인하세요", cat: "하체·힙", name: "스쿼트" },
+    { id: "6haFNBUOGOA", label: "하체운동, 협응력까지 잡는 방법 · 레그프레스 다음 동작", cat: "하체·힙", name: "레그프레스" },
+    { id: "XuhX5HF3pBo", label: "브이 스쿼트 머신, 바닥 스쿼트와 뭐가 다를까", cat: "하체·힙", name: "브이 스쿼트 머신" },
+    { id: "XksxVZA0cEY", label: "스쿼트와 데드리프트, 이 둘만 제대로 하면 됩니다", cat: "하체·힙", name: "스쿼트·데드리프트" },
+    { id: "Fsd1bO1Kgv4", label: "운동 시간 절반, 힙업은 두 배 · 2동작 힙 루틴", cat: "하체·힙", name: "2동작 힙 루틴" },
+    { id: "WakadKpXW2Y", label: "새해 운동이 두렵다면 · 밴드 힙 운동부터", cat: "하체·힙", name: "밴드 힙 운동" },
+    { id: "fy2PWrqOtR8", label: "퇴근 후 30분 · 불가리안 스플릿 스쿼트", cat: "하체·힙", name: "불가리안 스플릿 스쿼트" },
+    { id: "JsWnvqYH3bY", label: "시간 없을수록 강도 있게 · 바벨 스쿼트", cat: "하체·힙", name: "바벨 스쿼트" },
+    { id: "X7Zrf_LCzrU", label: "힙업엔 스쿼트 · 자세만 잡아도 자극이 달라집니다", cat: "하체·힙", name: "힙업 스쿼트" },
+    { id: "gDFmUKd-7Hk", label: "러닝 중 다리가 흔들리면 · 원레그 데드리프트", cat: "하체·힙", name: "원레그 데드리프트" },
+    { id: "pTw4Q-zy-F4", label: "가슴운동 마지막 세트, 무게 줄여 한 번 더 (드랍세트)", cat: "가슴", name: "가슴 드랍세트" },
+    { id: "3D1MEnZPH5w", label: "30대 니트핏 살리는 건 결국 가슴 밀기", cat: "가슴", name: "가슴 밀기" },
+    { id: "rPQskpvCMfQ", label: "가슴 입체감 만드는 2가지 · 인클라인 벤치 + 딥스", cat: "가슴", name: "인클라인 벤치·딥스" },
+    { id: "EsUks4kKznk", label: "월요일 가슴운동, 머신 핀 세팅부터 확인하세요", cat: "가슴", name: "체스트프레스 머신" },
+    { id: "blgDN3IHyBA", label: "육아 스트레스는 웨이트로 · 엄마를 위한 가슴운동", cat: "가슴", name: "가슴운동" },
+    { id: "bj8WSi24BeA", label: "연휴 끝, 다시 내 몸에 집중 · 인클라인 덤벨프레스", cat: "가슴", name: "인클라인 덤벨프레스" },
+    { id: "Yt81AmogEHg", label: "짧은 시간 상체 키우기 · 벤치·푸시업·덤벨 3종", cat: "가슴", name: "벤치·푸시업·덤벨" },
+    { id: "u9q8rE3MhO0", label: "남자 상체 루틴 · 인클라인 벤치→랫풀다운→딥스", cat: "가슴", name: "상체 3종 루틴" },
+    { id: "86vgJ9X60Oc", label: "월요일은 가슴운동 · 인클라인 덤벨프레스", cat: "가슴", name: "인클라인 덤벨프레스" },
+    { id: "wZso7a6zIGc", label: "턱걸이를 목표로 잡으면 등이 이렇게 바뀝니다", cat: "등", name: "턱걸이 준비" },
+    { id: "u1bd5AoXZT8", label: "등 운동은 순서가 답 · 풀업→바벨로우 4단계", cat: "등", name: "풀업·바벨로우" },
+    { id: "0G153znyFF0", label: "턱걸이, 실패 지점까지 당겨야 늘어납니다", cat: "등", name: "턱걸이" },
+    { id: "tjHwWkJUY_Y", label: "명절 연휴 뒤엔 등 운동 · 랫풀다운부터 다시", cat: "등", name: "랫풀다운" },
+    { id: "GIxI8Zm0htA", label: "등 + 가슴 조합 루틴 · 순서만 바꿔도 달라집니다", cat: "등", name: "등+가슴 루틴" },
+    { id: "oSwE9mBAjWs", label: "풀업 할 때 허리 아프다면 · 아치 대신 능동 장력", cat: "등", name: "풀업" },
+    { id: "zx9ltVMLzmk", label: "턱걸이 개수 늘리는 가장 확실한 방법", cat: "등", name: "턱걸이" },
+    { id: "MUE8TVTSVVU", label: "등 운동이 안 느껴질 때 · 덤벨 로우 각도", cat: "등", name: "덤벨 로우" },
+    { id: "AFbsIUugSxk", label: "가을엔 등 운동 · 여자 케이블 로우 자세", cat: "등", name: "케이블 로우" },
+    { id: "nM4xh1GL_Go", label: "목·어깨 뭉칠 때 운동 전 2분 워밍업 (회전근개)", cat: "어깨·목", name: "목·어깨 워밍업" },
+    { id: "dZjAkjdT1Kc", label: "어깨 뻐근할 때, 등 당기기 전에 이거 먼저", cat: "어깨·목", name: "어깨 워밍업" },
+    { id: "V24IegFI0qw", label: "계단 오르기가 힘들다면 · 기능성 트레이닝 3동작", cat: "유산소·기능성", name: "계단 기능성 루틴" },
+    { id: "AO_GYtzJZP0", label: "몸이 먼저 반응하는 근력 트레이닝 · 기능성 운동", cat: "유산소·기능성", name: "기능성 트레이닝" },
+    { id: "oQCuy2LXvz4", label: "체스트프레스·러닝·스쿼트 · 꾸준함이 만드는 차이", cat: "유산소·기능성", name: "체스트·러닝·스쿼트" },
+    { id: "gVh9t7W9JWc", label: "러닝 후 무릎·발목 아프다면 · 통증 줄이는 3가지", cat: "유산소·기능성", name: "러닝 통증 케어" },
+    { id: "8E4OPyK-o9w", label: "하프 마라톤 뒤 발목 통증 · 운동으로 회복한 과정", cat: "유산소·기능성", name: "발목 통증 케어" },
+    { id: "ojD0R80mLzQ", label: "천국의계단 사용법 · 모르면 이 영상 보세요", cat: "유산소·기능성", name: "천국의계단" },
+    { id: "K1K-0dYzSzA", label: "임산부 가벼운 맨몸운동 · 골반 말아 올리기부터", cat: "임산부", name: "임산부 맨몸운동" },
+    { id: "vnYYtPqzxMY", label: "26주차 임산부 운동 · 무리 없이 등 당기는 루틴", cat: "임산부", name: "임산부 등 당기기" },
+    { id: "RHBdgAhxkgs", label: "25주차 임산부 운동 · 등 당기기 이렇게 하세요", cat: "임산부", name: "임산부 등 운동" },
+    { id: "tO6MOnSWz10", label: "24주차 임산부 운동 · 한 팔 케이블 로우 따라하기", cat: "임산부", name: "임산부 케이블 로우" },
+    { id: "Xcv8gCoAdbY", label: "임산부 인터벌 러닝 · 속도 7.5·5.5로 3세트", cat: "임산부", name: "임산부 인터벌 러닝" },
+    { id: "-dE83FFgC6E", label: "부모님 헬스장 등록만 하면 될까? 시니어 근력운동 체크", cat: "동기·기타" },
+    { id: "8j1mmbOIDhE", label: "기분 처질 때 30분 운동이 하루를 바꿉니다", cat: "동기·기타" },
+    { id: "XrL1PIh_OZY", label: "미루는 순간 습관이 끊깁니다 · 오늘 스쿼트 한 세트", cat: "동기·기타" },
+    { id: "itNYUmyEf68", label: "루틴은 완벽하게 말고, 오늘 한 번만 해보세요", cat: "동기·기타" },
+    { id: "kPw2sJAU3H8", label: "기초대사량 높이는 건 결국 매일의 움직임", cat: "동기·기타" },
+    { id: "dPOmWFtUhdU", label: "완벽한 준비 기다리지 마세요 · 2026 운동 시작", cat: "동기·기타" },
+    { id: "WAH6bcQst9U", label: "천 리 길도 한 걸음 · 오늘 한 세트가 내일을 바꿉니다", cat: "동기·기타" },
+    { id: "OR5mF3jg4d0", label: "남녀노소 즐겁게 배우는 곳 · 4년간 500명이 선택한 PT", cat: "동기·기타" },
+    { id: "TtlnG1_L-sQ", label: "시간은 누구에게나 똑같이 흐릅니다 · 자기관리", cat: "동기·기타" },
+    { id: "5v0Ci417JbU", label: "제주 신라호텔 헬스장 · 호캉스에도 운동은 계속", cat: "동기·기타" },
+    { id: "R66W2CYMUPU", label: "30대 남자가 근력을 키워야 하는 이유 (무기력)", cat: "동기·기타" },
+  ];
   var DEMO = {
     member: {
       name: "김지현",
@@ -627,15 +701,15 @@
       nextDiff: 3
     },
     exercises: [
-      { name: "바벨 백 스쿼트", sets: 4, weight: 50, reps: 10, unit: "회", shorts: "X7Zrf_LCzrU" },
-      { name: "루마니안 데드리프트", sets: 3, weight: 40, reps: 12, unit: "회", shorts: "gDFmUKd-7Hk" },
+      { name: "힙업 스쿼트", sets: 4, weight: 50, reps: 10, unit: "회", shorts: "X7Zrf_LCzrU" },
+      { name: "원레그 데드리프트", sets: 3, weight: 40, reps: 12, unit: "회", shorts: "gDFmUKd-7Hk" },
       { name: "랫풀다운", sets: 3, weight: 35, reps: 12, unit: "회", shorts: "tjHwWkJUY_Y" },
       { name: "케이블 로우", sets: 3, weight: 25, reps: 15, unit: "회", shorts: "AFbsIUugSxk" }
     ],
     feedback: "오늘 스쿼트에서 내려갈 때 무릎이 안쪽으로 모이는 구간이 있었어요. 2세트부터 발바닥 바깥쪽에 체중을 실어주니 골반이 훨씬 안정됐습니다.\n데드리프트는 바가 몸에서 살짝 멀어지는 순간이 있었는데, 정강이에 바를 붙인다는 느낌만 잡으면 등 자극이 확 살아나요. 오늘은 전반적으로 코어 긴장 유지가 좋았습니다.",
     point: "스쿼트 하강 3초, 골반 중립 유지",
     homework: [
-      { text: "힙 힌지 연습", meta: "3세트 × 15회 · 벽 짚고", done: false, shorts: "Fsd1bO1Kgv4" },
+      { text: "2동작 힙 루틴", meta: "2동작 × 15회 · 힙 루틴", done: false, shorts: "Fsd1bO1Kgv4" },
       { text: "천국의계단 유산소", meta: "15분 · 속도 5–6", done: false, shorts: "ojD0R80mLzQ" },
       { text: "목·어깨 워밍업", meta: "2분 · 수업 전 매일", done: false, shorts: "nM4xh1GL_Go" }
     ]
@@ -652,8 +726,25 @@
       if(!raw) return clone(DEMO);
       var s = JSON.parse(raw);
       if(!s || !s.member || !s.exercises) return clone(DEMO);
-      return s;
+      return migrate(s);
     }catch(e){ return clone(DEMO); }
+  }
+  /* 2026-11 이전 저장본: 쇼츠 영상과 운동명이 어긋나 있던 3건을 바로잡음 */
+  function migrate(s){
+    var fixes = { "X7Zrf_LCzrU": ["바벨 백 스쿼트", "힙업 스쿼트"],
+                  "gDFmUKd-7Hk": ["루마니안 데드리프트", "원레그 데드리프트"],
+                  "Fsd1bO1Kgv4": ["힙 힌지 연습", "2동작 힙 루틴"] };
+    var changed = false;
+    (s.exercises || []).forEach(function(ex){
+      var f = fixes[ytId(ex.shorts)];
+      if(f && ex.name === f[0]){ ex.name = f[1]; changed = true; }
+    });
+    (s.homework || []).forEach(function(h){
+      var f = fixes[ytId(h.shorts)];
+      if(f && h.text === f[0]){ h.text = f[1]; changed = true; }
+    });
+    if(changed){ try{ localStorage.setItem(KEY, JSON.stringify(s)); }catch(e){} }
+    return s;
   }
   function save(){
     try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
@@ -678,6 +769,33 @@
     if(id) return YT + id;
     if(url && /^https?:\/\//.test(url)) return url;
     return "https://www.youtube.com/@setoo28/search?query=" + encodeURIComponent((name || "") + " 자세");
+  }
+  /* ---------- 쇼츠 목록 (실제 @setoo28 / 클라이짐의 숏츠 근력 처방 채널) ---------- */
+  function shortsInfo(id){
+    for(var i=0;i<SHORTS.length;i++){ if(SHORTS[i].id === id) return SHORTS[i]; }
+    return null;
+  }
+  function shortsSelect(kind, idx, selected){
+    var h = '<select class="sel" data-shorts-' + kind + '="' + idx + '" aria-label="쇼츠 제목으로 고르기">' +
+      '<option value="">쇼츠 제목으로 고르기 · ' + SHORTS.length + '개</option>';
+    var cats = [];
+    SHORTS.forEach(function(s){ if(cats.indexOf(s.cat) < 0) cats.push(s.cat); });
+    cats.forEach(function(c){
+      h += '<optgroup label="' + esc(c) + '">';
+      SHORTS.forEach(function(s){
+        if(s.cat !== c) return;
+        h += '<option value="' + s.id + '"' + (s.id === selected ? ' selected' : '') + '>' + esc(s.label) + '</option>';
+      });
+      h += '</optgroup>';
+    });
+    return h + '</select>';
+  }
+  function shortsNote(url){
+    var id = ytId(url);
+    if(!id) return '<p class="sel-note idle">쇼츠를 고르면 회원 화면에 영상이 연결됩니다.</p>';
+    var info = shortsInfo(id);
+    if(info) return '<p class="sel-note on">✓ ' + esc(info.label) + '</p>';
+    return '<p class="sel-note on">✓ 직접 입력한 영상 ' + esc(id) + '</p>';
   }
   function playIcon(cls){
     return '<svg class="' + (cls||'') + '" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.2v13.6c0 .8.9 1.3 1.6.9l10.2-6.8a1 1 0 0 0 0-1.7L9.6 4.3A1 1 0 0 0 8 5.2Z"/></svg>';
@@ -829,7 +947,11 @@
             '<div><span class="mini-label">무게(kg)</span><input class="input" data-ex="' + i + '" data-prop="weight" type="number" inputmode="decimal" min="0" value="' + esc(ex.weight) + '"></div>' +
             '<div><span class="mini-label">횟수</span><input class="input" data-ex="' + i + '" data-prop="reps" type="number" inputmode="numeric" min="1" value="' + esc(ex.reps) + '"></div>' +
           '</div>' +
-          '<div style="margin-top:8px"><span class="mini-label">쇼츠 링크</span>' +
+          '<div style="margin-top:8px"><span class="mini-label">쇼츠 제목으로 고르기</span>' +
+            shortsSelect("ex", i, ytId(ex.shorts)) +
+            shortsNote(ex.shorts) +
+          '</div>' +
+          '<div style="margin-top:8px"><span class="mini-label">쇼츠 링크 직접 입력</span>' +
             '<input class="input" data-ex="' + i + '" data-prop="shorts" value="' + esc(ex.shorts || "") + '" placeholder="영상 ID 또는 shorts 링크 (비우면 채널 검색)">' +
           '</div>' +
         '</div>';
@@ -850,6 +972,10 @@
           '<div class="grid-2">' +
             '<div><span class="mini-label">안내 (세트·시간)</span><input class="input" data-hw="' + i + '" data-prop="meta" value="' + esc(h.meta || "") + '" placeholder="3세트 × 15회"></div>' +
             '<div><span class="mini-label">쇼츠 링크</span><input class="input" data-hw="' + i + '" data-prop="shorts" value="' + esc(h.shorts || "") + '" placeholder="비우면 채널 검색"></div>' +
+          '</div>' +
+          '<div style="margin-top:8px"><span class="mini-label">쇼츠 제목으로 고르기</span>' +
+            shortsSelect("hw", i, ytId(h.shorts)) +
+            shortsNote(h.shorts) +
           '</div>' +
         '</div>';
     });
@@ -931,6 +1057,29 @@
     renderTrainer(); renderMember(); save();
   });
 
+  /* 쇼츠 제목으로 고르기 */
+  function onShortsPick(kind, t){
+    var i = +t.getAttribute("data-shorts-" + kind);
+    var id = t.value;
+    var list = kind === "ex" ? state.exercises : state.homework;
+    var item = list && list[i];
+    if(!item) return;
+    item.shorts = id;
+    var info = shortsInfo(id);
+    if(info){
+      if(kind === "ex" && info.name && !String(item.name || "").trim()) item.name = info.name;
+      if(kind === "hw" && !String(item.text || "").trim()) item.text = info.name || info.label.split(" · ").pop();
+    }
+    renderTrainer(); renderMember(); save();
+    toast(info ? "쇼츠 연결 · " + info.label : "쇼츠 연결을 해제했어요");
+  }
+  document.addEventListener("change", function(e){
+    var t = e.target;
+    if(!t || !t.dataset) return;
+    if(t.dataset.shortsEx != null){ onShortsPick("ex", t); return; }
+    if(t.dataset.shortsHw != null){ onShortsPick("hw", t); }
+  });
+
   /* stepper */
   function step(d){
     var tot = Math.max(1, num(state.member.total,20));
@@ -986,6 +1135,13 @@
   /* init */
   renderMember();
   renderTrainer();
+
+  /* PWA: 홈 화면에 추가 후 오프라인에서도 열리도록 (network-first) */
+  if("serviceWorker" in navigator && location.protocol === "https:"){
+    window.addEventListener("load", function(){
+      navigator.serviceWorker.register("sw.js").catch(function(){});
+    });
+  }
 })();
 </script>
 </body>
