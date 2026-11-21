@@ -4,7 +4,7 @@
 set -euo pipefail
 
 OWNER="${1:-setoo28-hue}"
-REPO="${2:-klygym-member}"
+REPO="${2:--2027-}"
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "1) 저장소 확인: $OWNER/$REPO"
@@ -23,10 +23,8 @@ echo "2) push"
 git push -u origin main
 
 echo "3) Pages 활성화 (이미 켜져 있으면 무시)"
-gh api -X POST "repos/$OWNER/$REPO/pages" \
-  -f "source[branch]=main" -f "source[path]=/" >/dev/null 2>&1 || \
-gh api -X PUT "repos/$OWNER/$REPO/pages" \
-  -f "source[branch]=main" -f "source[path]=/" >/dev/null 2>&1 || true
+# Pages 는 gh-pages 브랜치 푸시로 자동 활성화됩니다 (API 토큰에 pages 권한 없음)
+git push origin main:gh-pages
 gh api "repos/$OWNER/$REPO/pages" --jq '.html_url + " (" + .status + ")"' || true
 
 URL="https://$OWNER.github.io/$REPO/"
