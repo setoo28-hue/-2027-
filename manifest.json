@@ -4,7 +4,7 @@
   "description": "등촌·증미역 1:1 PT 클라이짐 — 오늘 수업 기록과 자세 쇼츠를 한 화면에서 확인하는 회원관리 앱",
   "lang": "ko",
   "dir": "ltr",
-  "start_url": "./",
+  "start_url": "./?hs=1",
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],

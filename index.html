@@ -750,6 +750,10 @@
 
   var urlCode = "";
   try{ urlCode = (new URLSearchParams(location.search).get("m") || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12); }catch(e){}
+  /* 홈 화면에 추가한 앱은 ?hs=1 로 열리므로, 이 기기에 저장된 회원 코드로 이어서 연다 */
+  if(!urlCode && /[?&]hs=1(&|$)/.test(location.search)){
+    try{ urlCode = (localStorage.getItem("klygym-member-code") || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12); }catch(e){}
+  }
   var memberMode = !!urlCode;
   var KEY = memberMode ? "klygym-member-app-v1-m-" + urlCode : "klygym-member-app-v1";
   var state = load();
@@ -1288,7 +1292,10 @@
   });
 
   /* init */
-  if(memberMode){ state.member.code = urlCode; }
+  if(memberMode){
+    state.member.code = urlCode;
+    try{ localStorage.setItem("klygym-member-code", urlCode); }catch(e){}
+  }
   if(!state.member.code){ state.member.code = newCode(); save(); }
   renderMember();
   renderTrainer();
