@@ -1071,7 +1071,7 @@
       if(kind === "hw" && !String(item.text || "").trim()) item.text = info.name || info.label.split(" · ").pop();
     }
     renderTrainer(); renderMember(); save();
-    toast(info ? "쇼츠 연결 · " + info.label : "쇼츠 연결을 해제했어요");
+    toast(info ? "쇼츠를 연결했어요" : "쇼츠 연결을 해제했어요");
   }
   document.addEventListener("change", function(e){
     var t = e.target;
