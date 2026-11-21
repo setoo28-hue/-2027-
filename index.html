@@ -270,6 +270,19 @@
   .next .dday{font-size:10.5px;font-weight:800;color:var(--accent);background:var(--accent-dim);border-radius:6px;padding:4px 7px;letter-spacing:.02em}
 
   .foot-note{text-align:center;font-size:10.5px;color:var(--muted-2);line-height:1.7;padding:6px 0 4px}
+  .sync-line{text-align:center;font-size:10px;color:var(--muted-2);margin:-6px 0 10px;letter-spacing:.02em}
+  .sync-line.bad{color:#FF8A8A}
+  .link-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .link-row code{
+    flex:1 1 100%;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;font-weight:700;
+    letter-spacing:.12em;color:var(--accent);background:var(--surface-2);border:1px solid var(--line);
+    border-radius:11px;padding:10px 12px;text-align:center;
+  }
+  .mini-btn{
+    flex:1;height:36px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid var(--line);
+    color:var(--text);font-size:12px;font-weight:600;
+  }
+  .mini-btn:active{border-color:var(--accent-line);color:var(--accent)}
   .foot-note b{color:var(--muted);font-weight:600}
 
   /* ---------- bottom nav ---------- */
@@ -505,6 +518,8 @@
       <span class="dday" id="m-dday">D-3</span>
     </div>
 
+    <p class="sync-line" id="m-sync">DB 연결 확인 중</p>
+
     <p class="foot-note"><b>클라이짐</b> · 서울 강서구 공항대로55길 47 대륙빌딩 5층<br>증미역 도보 5분 · 문의 02-2659-2535</p>
   </main>
 
@@ -525,6 +540,19 @@
       <h2>오늘 수업 기록 입력</h2>
       <p>입력한 내용이 회원 화면에 바로 반영됩니다.</p>
     </div>
+
+    <section class="card">
+      <div class="card-hd">
+        <div class="card-title"><span class="dot"></span>회원 링크</div>
+        <span class="card-sub" id="t-sync">DB 연결 확인 중</span>
+      </div>
+      <div class="link-row">
+        <code id="t-code">—</code>
+        <button type="button" class="mini-btn" id="t-copy">링크 복사</button>
+        <button type="button" class="mini-btn" id="t-newcode">새 코드</button>
+      </div>
+      <p class="hint">이 링크를 회원에게 보내면 회원 폰에서 오늘 수업·숙제가 보이고, 숙제 체크가 여기로 돌아옵니다. 10초마다 자동으로 맞춰집니다.</p>
+    </section>
 
     <section class="card">
       <div class="card-hd"><div class="card-title"><span class="dot"></span>회원 · 회차</div></div>
@@ -630,6 +658,7 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"><i></i><span id="toast-msg">회원 화면에 반영됐어요</span></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 (function(){
   "use strict";
@@ -715,8 +744,21 @@
     ]
   };
 
-  var KEY = "klygym-member-app-v1";
+  var urlCode = "";
+  try{ urlCode = (new URLSearchParams(location.search).get("m") || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12); }catch(e){}
+  var memberMode = !!urlCode;
+  var KEY = memberMode ? "klygym-member-app-v1-m-" + urlCode : "klygym-member-app-v1";
   var state = load();
+
+  /* ---------- Supabase 실사용 DB ---------- */
+  var SB = { url: "https://dvjqfwdfpyytphclavkv.supabase.co", anon: "sb_publishable_qHkrfd_TOeEjGVcMIKgiNw_Ab9DWCTE" };
+  var sb = null;
+  try{
+    if(window.supabase && window.supabase.createClient && /^https:\/\/[a-z0-9]+\.supabase\.co$/.test(SB.url) && SB.anon.length > 40){
+      sb = window.supabase.createClient(SB.url, SB.anon);
+    }
+  }catch(e){ sb = null; }
+  var syncBusy = false;
   var weekday = ["일","월","화","수","목","금","토"];
 
   function clone(o){ return JSON.parse(JSON.stringify(o)); }
@@ -748,6 +790,83 @@
   }
   function save(){
     try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+  }
+
+  /* ---------- DB 동기화 ---------- */
+  function timeHM(){ var d = new Date(); return ("0"+d.getHours()).slice(-2) + ":" + ("0"+d.getMinutes()).slice(-2); }
+  function newCode(){
+    var A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", s = "", i;
+    try{
+      var b = new Uint8Array(8); crypto.getRandomValues(b);
+      for(i=0;i<8;i++) s += A[b[i] % A.length];
+    }catch(e){
+      for(i=0;i<8;i++) s += A[Math.floor(Math.random()*A.length)];
+    }
+    return s;
+  }
+  function memberLink(code){ return location.origin + location.pathname + "?m=" + encodeURIComponent(code || ""); }
+  function setSync(ok, msg){
+    var txt = msg || (ok === true ? "DB 연결 · " + timeHM() + " 동기화" : ok === false ? "DB 연결 안 됨 · 폰에만 저장" : "DB 연결 확인 중");
+    ["t-sync","m-sync"].forEach(function(id){
+      var el = document.getElementById(id);
+      if(!el) return;
+      el.textContent = txt;
+      if(el.classList){ el.classList.toggle("off", ok === null); el.classList.toggle("bad", ok === false); }
+    });
+  }
+  function dbPayload(){
+    var m = state.member;
+    return { name: m.name || "", program: m.program || "", total: num(m.total,20), completed: num(m.completed,0),
+             date: m.date || "", next: m.next || "", feedback: state.feedback || "", point: state.point || "",
+             exercises: state.exercises || [], homework: state.homework || [] };
+  }
+  function isEditingField(){
+    var a = document.activeElement;
+    return !!(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
+  }
+  function applyRemote(r){
+    if(!r) return;
+    var m = state.member;
+    if(memberMode){
+      m.name = r.name || m.name; m.program = r.program || m.program;
+      m.total = num(r.total, m.total); m.completed = num(r.completed, m.completed);
+      m.date = r.session_date || m.date; m.next = r.next_at || m.next;
+      state.feedback = r.feedback || ""; state.point = r.point || "";
+      if(Array.isArray(r.exercises)) state.exercises = r.exercises;
+      if(Array.isArray(r.homework)) state.homework = r.homework;
+      save(); renderMember();
+      return;
+    }
+    /* 트레이너 화면에서는 회원이 체크한 숙제만 반영 */
+    if(!Array.isArray(r.homework)) return;
+    var changed = false;
+    state.homework.forEach(function(h, i){
+      if(r.homework[i] && (!!r.homework[i].done) !== (!!h.done)){ h.done = !!r.homework[i].done; changed = true; }
+    });
+    if(changed){ save(); renderMember(); if(!isEditingField()) renderTrainer(); }
+  }
+  function pullState(){
+    if(!sb || !state.member.code || syncBusy) return Promise.resolve();
+    syncBusy = true;
+    return sb.rpc("klygym_member_get", { p_code: state.member.code }).then(function(res){
+      syncBusy = false;
+      if(res.error){ setSync(false); return; }
+      if(!res.data){ setSync(true, "새 회원 코드 · 저장 대기"); return; }
+      applyRemote(res.data); setSync(true);
+    }).catch(function(){ syncBusy = false; setSync(false); });
+  }
+  function pushState(){
+    if(!sb || !state.member.code){ setSync(null); return Promise.resolve(false); }
+    return sb.rpc("klygym_member_save", { p_code: state.member.code, p_state: dbPayload() }).then(function(res){
+      if(res.error){ setSync(false); return false; }
+      setSync(true); return true;
+    }).catch(function(){ setSync(false); return false; });
+  }
+  function remoteToggle(i, done){
+    if(!sb || !memberMode) return;
+    sb.rpc("klygym_homework_toggle", { p_code: state.member.code, p_index: i, p_done: done })
+      .then(function(res){ setSync(res.error ? false : true); })
+      .catch(function(){ setSync(false); });
   }
   function num(v, d){ var n = parseInt(v, 10); return isNaN(n) ? d : n; }
   function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
@@ -925,6 +1044,7 @@
     document.getElementById("t-next").value = m.next || "";
     document.getElementById("t-feedback").value = state.feedback || "";
     document.getElementById("t-point").value = state.point || "";
+    document.getElementById("t-code").textContent = state.member.code || "—";
 
     var total = Math.max(1, num(m.total, 20));
     document.getElementById("t-progress-hint").textContent = total + "회 중 " + clamp(num(m.completed,0),0,total) + "회 완료";
@@ -1031,6 +1151,7 @@
     if(!state.homework[i]) return;
     state.homework[i].done = !state.homework[i].done;
     save(); renderMember();
+    remoteToggle(i, state.homework[i].done);
     var hw = state.homework;
     if(hw.length && hw.every(function(h){ return h.done; })) toast("숙제 전부 완료! 다음 수업에서 봬요 🔥");
   });
@@ -1112,13 +1233,14 @@
       ex.sets = num(ex.sets,0); ex.weight = num(ex.weight,0); ex.reps = num(ex.reps,1);
     });
     save(); renderMember(); switchTab("member");
-    toast("회원 화면에 반영됐어요");
+    pushState().then(function(ok){ toast(ok ? "회원 폰에 반영됐어요" : "폰에는 저장됐지만 DB 연결을 확인해 주세요"); });
   });
 
   /* reset */
   document.getElementById("t-reset").addEventListener("click", function(){
     if(!window.confirm("시안을 처음 상태(김지현 회원 · 2회 완료)로 되돌릴까요?")) return;
-    state = clone(DEMO); save(); renderTrainer(); renderMember(); switchTab("member");
+    state = clone(DEMO); if(memberMode){ state.member.code = urlCode; } else { state.member.code = newCode(); }
+    save(); renderTrainer(); renderMember(); switchTab("member"); pushState();
     toast("시안을 초기화했어요");
   });
 
@@ -1132,9 +1254,38 @@
     toastTimer = setTimeout(function(){ el.classList.remove("on"); }, 2200);
   }
 
+  /* 회원 링크 복사 · 새 코드 */
+  document.getElementById("t-copy").addEventListener("click", function(){
+    var link = memberLink(state.member.code);
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(link).then(function(){ toast("회원 링크를 복사했어요"); }, function(){ window.prompt("회원 링크", link); });
+    } else { window.prompt("회원 링크", link); }
+  });
+  document.getElementById("t-newcode").addEventListener("click", function(){
+    if(!window.confirm("새 회원 코드를 만들까요? 기존 링크는 이 회원과 연결되지 않습니다.")) return;
+    state.member.code = newCode(); save(); renderTrainer();
+    pushState().then(function(){ toast("새 코드로 저장했어요"); });
+  });
+
   /* init */
+  if(memberMode){ state.member.code = urlCode; }
+  if(!state.member.code){ state.member.code = newCode(); save(); }
   renderMember();
   renderTrainer();
+  if(memberMode){
+    document.getElementById("page-trainer").classList.remove("on");
+    document.getElementById("page-member").classList.add("on");
+    var navT = document.getElementById("nav-trainer");
+    if(navT) navT.style.display = "none";
+  }
+  if(sb){ pullState(); } else { setSync(null); }
+  setInterval(function(){
+    if(document.hidden || !sb) return;
+    if(!memberMode && isEditingField()) return;
+    pullState();
+  }, 10000);
+  document.addEventListener("visibilitychange", function(){ if(!document.hidden && sb) pullState(); });
+  window.addEventListener("focus", function(){ if(sb) pullState(); });
 
   /* PWA: 홈 화면에 추가 후 오프라인에서도 열리도록 (network-first) */
   if("serviceWorker" in navigator && location.protocol === "https:"){
