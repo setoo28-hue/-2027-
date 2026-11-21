@@ -859,7 +859,18 @@
     return sb.rpc("klygym_member_get", { p_code: state.member.code }).then(function(res){
       syncBusy = false;
       if(res.error){ setSync(false); return; }
-      if(!res.data){ setSync(true, "새 회원 코드 · 저장 대기"); return; }
+      if(!res.data){
+        if(memberMode){
+          /* 코드는 맞지만 아직 저장된 기록이 없음 → 남의 시안 데이터가 보이지 않게 비움 */
+          state = { member: { name:"", program:"1:1 PT", total:20, completed:0, date:"", next:"", code:state.member.code },
+                    exercises: [], feedback: "", point: "", homework: [] };
+          save(); renderMember();
+          setSync(true, "수업 기록 준비 중");
+        } else {
+          setSync(true, "새 회원 코드 · 저장 대기");
+        }
+        return;
+      }
       applyRemote(res.data); setSync(true);
     }).catch(function(){ syncBusy = false; setSync(false); });
   }
