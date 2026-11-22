@@ -59,6 +59,8 @@
   @media (min-width:560px){
     .shell{border-left:1px solid var(--line);border-right:1px solid var(--line);background:rgba(255,255,255,.008)}
   }
+  /* 회원 링크로 연 화면은 한 장뿐이라 하단 탭을 감춘다 */
+  body.member-only .shell{padding-bottom:calc(26px + env(safe-area-inset-bottom))}
 
   /* ---------- top bar ---------- */
   .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(16px + env(safe-area-inset-top)) 2px 14px}
@@ -112,8 +114,8 @@
   .ring svg{transform:rotate(-90deg);display:block}
   .ring .track{stroke:rgba(255,255,255,.09)}
   .ring .bar{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .5s ease}
-  .ring-in{position:absolute;inset:0;display:grid;place-content:center;text-align:center;line-height:1}
-  .ring-in b{font-size:18px;font-weight:800;letter-spacing:-.04em}
+  .ring-in{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1}
+  .ring-in b{font-size:17px;font-weight:800;letter-spacing:-.03em;display:inline-flex;align-items:baseline}
   .ring-in b small{font-size:9.5px;color:var(--muted);font-weight:600;letter-spacing:0}
   .progress{margin-top:16px}
   .bar{height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
@@ -1313,6 +1315,9 @@
   if(memberMode){
     document.getElementById("page-trainer").classList.remove("on");
     document.getElementById("page-member").classList.add("on");
+    document.body.classList.add("member-only");
+    var navEl = document.querySelector(".nav");
+    if(navEl) navEl.style.display = "none";
     var navT = document.getElementById("nav-trainer");
     if(navT) navT.style.display = "none";
   }
