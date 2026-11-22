@@ -1,5 +1,5 @@
 /* 클라이짐 회원관리 — 오프라인 캐시 (network-first: 온라인이면 항상 최신, 끊기면 캐시) */
-var CACHE = "klygym-member-v1";
+var CACHE = "klygym-member-v2";
 var ASSETS = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png", "./apple-touch-icon-180.png"];
 
 self.addEventListener("install", function (e) {
