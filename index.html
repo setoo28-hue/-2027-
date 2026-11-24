@@ -681,16 +681,16 @@
 
     <section class="card bgm-hero" aria-label="클라이짐 운동 BGM">
       <p class="eyebrow">WORKOUT MIX · 2026</p>
-      <h1 class="bgm-h1">운동 BGM<span>15곡 · 34분 · 셔플로 이어서</span></h1>
-      <p class="bgm-lead">PT·개인운동 할 때 그대로 틀어두세요. 재생을 누르면 15곡이 순서대로 이어집니다.</p>
+      <h1 class="bgm-h1">운동 BGM<span>17곡 · 36분 · 셔플로 이어서</span></h1>
+      <p class="bgm-lead">PT·개인운동 할 때 그대로 틀어두세요. 재생을 누르면 17곡이 순서대로 이어집니다.</p>
       <div data-player-slot="page"></div>
       <p class="bgm-share-row"><button type="button" class="bgm-share" id="bgm-copy">링크 복사</button></p>
     </section>
 
     <section class="card" aria-label="트랙 목록">
       <div class="card-hd">
-        <div class="card-title">트랙 15곡</div>
-        <span class="bgm-count">34:00</span>
+        <div class="card-title">트랙 17곡</div>
+        <span class="bgm-count">36:00</span>
       </div>
       <div class="pl-list" data-list="page"></div>
     </section>
@@ -727,7 +727,7 @@
   <header class="bgm-hd">
     <div>
       <p class="bgm-eyebrow">KLAY GYM · WORKOUT MIX</p>
-      <h2 id="bgm-sheet-title">운동 BGM <span>15곡 · 34분</span></h2>
+      <h2 id="bgm-sheet-title">운동 BGM <span>17곡 · 36분</span></h2>
     </div>
     <button type="button" class="bgm-x" id="bgm-close" aria-label="플레이어 닫기">×</button>
   </header>
@@ -1423,7 +1423,7 @@
     toastTimer = setTimeout(function(){ el.classList.remove("on"); }, 2200);
   }
 
-  /* ---------- 운동 BGM (15곡 로컬 MP3 · 탭 시 재생) ---------- */
+  /* ---------- 운동 BGM (17곡 로컬 MP3 · 탭 시 재생) ---------- */
   var TRACKS = [
     { f:"01_snow-on-the-beat.mp3",    t:"Snow On the Beat",     bpm:123, s:"붐뱁 재즈힙합",      d:110 },
     { f:"02_christmas-eve-drive.mp3", t:"크리스마스 이브 드라이브",  bpm:116, s:"시티팝 · 신스펑크",   d:160 },
@@ -1439,7 +1439,9 @@
     { f:"12_cozy-like-this-b.mp3",    t:"Cozy Like This Ⅱ",     bpm:120, s:"네오소울 힙합",      d:120 },
     { f:"13_peppermint-avenue-b.mp3", t:"Peppermint Avenue Ⅱ",  bpm:124, s:"이스트코스트 재즈랩", d:120 },
     { f:"14_jingle-groove-b.mp3",     t:"Jingle Groove Ⅱ",      bpm:126, s:"댄스 바운스",        d:120 },
-    { f:"15_snow-on-the-beat-b.mp3",  t:"Snow On the Beat Ⅱ",   bpm:123, s:"붐뱁 재즈힙합",      d:120 }
+    { f:"15_snow-on-the-beat-b.mp3",  t:"Snow On the Beat Ⅱ",   bpm:123, s:"붐뱁 재즈힙합",      d:120 },
+    { f:"16_cafe-bounce.mp3",         t:"Cafe Bounce",          bpm:100, s:"카페 재즈힙합(연주)",  d:60 },
+    { f:"17_cafe-bounce-ii.mp3",      t:"Cafe Bounce Ⅱ",       bpm:100, s:"카페 재즈힙합(연주)",  d:60 }
   ];
   var BGM_DIR = "bgm/";
   var bgmQ = false;
@@ -1458,7 +1460,7 @@
 
   function playerHTML(kind){
     var cover = kind === "page"
-      ? '<div class="pl-cover" aria-hidden="true"><span class="cv-top">KLAY GYM</span><span class="cv-mid">WORKOUT<br>BGM 2026</span><span class="cv-bot">15 TRACKS · 34 MIN</span></div>'
+      ? '<div class="pl-cover" aria-hidden="true"><span class="cv-top">KLAY GYM</span><span class="cv-mid">WORKOUT<br>BGM 2026</span><span class="cv-bot">17 TRACKS · 36 MIN</span></div>'
       : '<div class="pl-cover sm" aria-hidden="true"><span class="cv-mono">K</span></div>';
     return '<div class="player ' + kind + '" data-player>' +
       '<div class="pl-top">' + cover +
@@ -1721,7 +1723,7 @@
     document.getElementById("page-trainer").classList.remove("on");
     document.getElementById("page-bgm").classList.add("on");
     document.body.classList.add("member-only", "bgm-only");
-    document.title = "클라이짐 · 운동 BGM (15곡)";
+    document.title = "클라이짐 · 운동 BGM (17곡)";
     var bgmNav = document.querySelector(".nav");
     if(bgmNav) bgmNav.style.display = "none";
     setSync(null);
