@@ -1,5 +1,5 @@
 /* 클라이짐 회원관리 — 오프라인 캐시 (network-first: 온라인이면 항상 최신, 끊기면 캐시) */
-var CACHE = "klygym-member-v2";
+var CACHE = "klygym-member-v3";
 var ASSETS = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png", "./apple-touch-icon-180.png"];
 
 self.addEventListener("install", function (e) {
@@ -23,6 +23,8 @@ self.addEventListener("fetch", function (e) {
   if (req.method !== "GET") return;
   var url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
+  /* 운동 BGM(mp3)은 브라우저 캐시에 맡긴다 — Cache Storage에 음원을 쌓지 않는다 */
+  if (url.pathname.indexOf("/bgm/") >= 0) return;
   e.respondWith(
     fetch(req).then(function (res) {
       var copy = res.clone();
